@@ -1,11 +1,26 @@
-import React, { useState } from "react";
+import React, { useEffect, useState } from "react";
 import TestDrawer from "./drawer/TestDrawer";
 import { Button } from "@mui/material";
 import Tape from "./tape/Tape";
 import ToolBar from "./appbar/ToolBar";
 import DynamicRuleTable from "./table/DynamicRuleTable";
+import { useDispatch } from "react-redux";
+import { screenResized } from "@/features/gui/guiSlice";
+import { highlightedCell } from "@/features/tape/tapeSlice";
 
 function App() {
+    const dispatch = useDispatch();
+
+    // set screen size on component mount 
+    useEffect(() => {
+        dispatch(screenResized({ screenSize: window.innerWidth }))
+
+        window.addEventListener("resize", () => {
+            dispatch(screenResized({ screenSize: window.innerWidth }));
+            dispatch(highlightedCell(null));
+        });
+    }, [dispatch]);
+
     const [saveMachineResponseOpen, setSaveMachineResponseOpen] = useState(false);
     const [anythingNewWithMachine, setAnythingNewWithMachine] = useState(false);
     const [dialogOpen, setDialogOpen] = useState(false);

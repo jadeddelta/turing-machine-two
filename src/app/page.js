@@ -3,6 +3,8 @@
 import App from "@/components/App";
 import { createTheme, ThemeProvider } from "@mui/material/styles";
 import { cyan, pink } from "@mui/material/colors";
+import { Provider } from "react-redux";
+import store from "./store";
 
 export default function Home() {
   const theme = createTheme({
@@ -32,9 +34,11 @@ export default function Home() {
 
   return (
     <main className="flex min-h-screen min-w-screen flex-col items-center">
-      <ThemeProvider theme={theme}>
-        <App />
-      </ThemeProvider>
+      <Provider store={store}>
+        <ThemeProvider theme={theme}>
+          <App />
+        </ThemeProvider>
+      </Provider>
     </main>
   );
 }

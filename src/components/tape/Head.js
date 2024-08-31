@@ -1,10 +1,31 @@
+import { DRAGGABLE_LEFT_BOUNDARY, DRAG_GRID_INTERVAL } from "@/features/gui/gui";
+import { headStringChanged } from "@/features/gui/guiSlice";
+import { headStateChanged } from "@/features/tape/tapeSlice";
 import { Autocomplete, TextField } from "@mui/material";
 import { grey } from "@mui/material/colors";
 import React, { useRef, forwardRef } from "react";
 import Draggable from "react-draggable";
+import { useDispatch, useSelector } from "react-redux";
 
 
 function Head({}) {
+    const { 
+        headX,
+        headWidth,
+        headLeftOffset,
+        rightBoundary
+    } = useSelector((state) => state.gui);
+    const tapeInternalState = useSelector((state) => state.tape.tapeInternalState);
+
+    const dispatch = useDispatch();
+
+    const handleInputChange = (e, v, r) => {
+        dispatch(headStateChanged(v));
+        dispatch(headStringChanged(v));
+        document.getElementById("HEAD_INPUT_1").focus(); //TODO: this is a hack
+        //TODO: it also loses focus upon hitting backspace with 1 character
+    }
+
     //TODO: redux state
     const handleStart = () => {
         console.log("dispatch highlightCorrespondingCellAction(true)")
@@ -17,8 +38,6 @@ function Head({}) {
     }
     const headPosition = 0;
     const isRunning = false;
-    const rightBoundary = 0;
-    const tapeInternalState = "0"; // searchText
     const options = ['HALT', '0', '1']; 
     const filter = (searchText, key) => 
         (searchText === "" || key.startsWith(searchText) && key !== searchText);
@@ -30,7 +49,8 @@ function Head({}) {
 
     const styles = {
         header: {
-            maxWidth: '130px',
+            width: headWidth,
+            left: headLeftOffset,
             textAlign: 'left',
             position: 'relative',
             ":hover": {
@@ -52,18 +72,17 @@ function Head({}) {
             fontSize: '18px',
             fontWeight: 'bold',
             height: 'auto',
-            width: '150px', // ???
+            width: '30px', 
             position: 'relative',
             textAlign: 'center',
         },
         headInput: {
-            fontFamily: 'Roboto Mono',
+            fontFamily: 'Roboto Mono, monospace',
             color: fontColor,
             textAlign: 'center',
         },
         textField: {
-            width: 30,
-            left: 0,
+            width: headWidth,
             height: 30,
             color: grey[900],
             textAlign: 'center',
@@ -74,14 +93,13 @@ function Head({}) {
             position: 'relative',
             backgroundColor: 'black',
             border: '2px solid black',
-            width: '30px', // these two are controlled by prop
-            left: '0px'
+            width: headWidth, 
         },
         neck: {
             width: '0.5px',
             height: '10px',
             position: 'relative',
-            left: '15%',
+            left: '50%',
             backgroundColor: 'black',
             border: '1px solid black',
         },
@@ -89,7 +107,7 @@ function Head({}) {
             width: '30px',
             height: '0.5px',
             position: 'relative',
-            left: '0px',
+            left: headLeftOffset,
             backgroundColor: 'black',
             border: '1px solid black',
         }
@@ -97,22 +115,13 @@ function Head({}) {
 
     const getAutocompleteField = (params) => {
         return (
-            <TextField 
-                {...params}
-                style={styles.textField}
-                InputProps={{
-                    ...params.InputProps, 
-                    style: styles.headInput,
-                    disableUnderline: true,
-                    endAdornment: null
-                }}
-                inputProps={{
-                    ...params.inputProps,
-                    maxLength: 20
-                }}
-                label="Internal State" 
-                disabled={isRunning /*|| isEditingExpectedTape */}
-            />
+            <div ref={params.InputProps.ref}>
+                <input 
+                    type="text" 
+                    {...params.inputProps} 
+                    style={{...styles.headInput, ...styles.textField}} 
+                />
+            </div>
         )
     }
 
@@ -127,10 +136,14 @@ function Head({}) {
                         id="HEAD_INPUT_1"
                         options={options}
                         value={tapeInternalState}
+                        onInputChange={(e, v, r) => {
+                            handleInputChange(e, v, r);    
+                        }}
                         renderInput={getAutocompleteField}
                         clearOnEscape
                         clearOnBlur={false}
                         openOnFocus={false}
+                        freeSolo
                     />
                     <div className="neck" style={styles.neck} />
                     <div className="shoulder" style={styles.shoulder} />
@@ -145,9 +158,9 @@ function Head({}) {
                 axis="x"
                 handle=".header"
                 position={{ x: headPosition, y: 0 }}
-                grid={[49, 0]}
+                grid={[DRAG_GRID_INTERVAL, 0]}
                 zIndex={100}
-                bounds={{left: 57, top: 0, right: rightBoundary}}
+                bounds={{left: DRAGGABLE_LEFT_BOUNDARY, top: 0, right: rightBoundary}}
                 onStart={handleStart}
                 onStop={handleEnd}
                 onDrag={handleDrag}

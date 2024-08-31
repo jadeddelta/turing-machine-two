@@ -7,10 +7,14 @@ import RollRight from "@mui/icons-material/FastForward";
 
 import Square from "./Square";
 import Head from "./Head";
+import { useSelector } from "react-redux";
+import { standardizeSquareId } from "@/features/tape/tape";
 
 
 function Tape({ trialDrawerToggleCallback }) {
     const [isEditingTrialName, setIsEditingTrialName] = useState(false);
+
+    const cells = useSelector((state) => state.tape.tapeCellsById);
 
     // TODO: redux state goes here
     let machineReportError = "this is an error message to be implemented";
@@ -27,11 +31,10 @@ function Tape({ trialDrawerToggleCallback }) {
         setIsEditingTrialName(!isEditingTrialName);
     }
 
-
-    const populateSquares = (size) => {
+    const populateSquares = (start, finish) => {
         var squares = [] 
-        for (var i = 0; i < size; i++) 
-            squares.push(i);
+        for (var i = start; i <= finish; i++) 
+            squares.push(standardizeSquareId(i));
         return squares;
     }
 
@@ -92,11 +95,11 @@ function Tape({ trialDrawerToggleCallback }) {
                         </IconButton>
                     </Tooltip>
                     {
-                        populateSquares(totalCells).map((i) => {
+                        populateSquares(0, totalCells).map((i) => {
                             let mark = i;
                             if (i === 0) mark = "first";
                             if (i === totalCells - 1) mark = "last";
-                            return <Square order={i} mark={mark} id={/*standardizeCellId()*/i} />
+                            return <Square order={i} mark={mark} id={i} />
                         })
                     }
                     
